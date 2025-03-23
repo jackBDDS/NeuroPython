@@ -97,18 +97,18 @@ def delete_iot_hub(iot_hub_name:str):
         return "%s has been deleted"%iot_hub_name
 
 def create_iot_hub_device(iot_hub_name:str,device_name:str):
-    endpoint = next(obj for obj in list_iot_hubs()["EndPointInfo"] if obj["Name"]==iot_hub_name and obj['EndpointTypeId']==1) 
+    endpoint = next(obj for obj in list_iot_hubs() if obj["Name"]==iot_hub_name and obj['EndpointTypeId']==1) 
     request = {'EndpointId':endpoint['EndPointId'],
     'DeviceId':device_name}
     neuro_call_v2(service='endpointmanager', method='RegisterDevice',requestbody=request, controller="endpointmanagement")
 
 def list_iot_hub_devices(iot_hub_name:str):
-    endpoint = next(obj for obj in list_iot_hubs()["EndPointInfo"] if obj["Name"]==iot_hub_name and obj['EndpointTypeId']==1) 
+    endpoint = next(obj for obj in list_iot_hubs() if obj["Name"]==iot_hub_name and obj['EndpointTypeId']==1) 
     request = {'EndpointId':endpoint['EndPointId']}
     neuro_call_v2(service='endpointmanager',method='GetRegisterDevices',requestbody=request, controller="endpointmanagement")["DeviceInfo"]
     
 def delete_iot_hub_devce(iot_hub_name:str,device_name:str):
-    endpoint = next(obj for obj in list_iot_hubs()["EndPointInfo"] if obj["Name"]==iot_hub_name and obj['EndpointTypeId']==1)
+    endpoint = next(obj for obj in list_iot_hubs() if obj["Name"]==iot_hub_name and obj['EndpointTypeId']==1)
     #Require interactive
     check = input("Are you sure you want to delete %s:%s (y/n)"%(iot_hub_name,device_name))
     if check=='y':
@@ -122,7 +122,7 @@ def create_update_iot_hub_raw_data_capture(iot_hub_name:str,datalake_name:str,
                                    partition_id_level:"PartitionByIdLevel"=PartitionIdLevels.NA,
                                    max_file_in_minutes:int=None,
                                    max_file_in_MB:int=None):
-    endpoint = next(obj for obj in list_iot_hubs()["EndPointInfo"] if obj["Name"]==iot_hub_name and obj['EndpointTypeId']==1)
+    endpoint = next(obj for obj in list_iot_hubs() if obj["Name"]==iot_hub_name and obj['EndpointTypeId']==1)
     datastore = neuro_call('80','datastoremanager','getdatastores',{"StoreName":datalake_name})['DataStores'][0]
     request = {'EndPointId': endpoint['EndPointId'],
     'DataStoreId':datastore['DataStoreId'],
@@ -133,7 +133,7 @@ def create_update_iot_hub_raw_data_capture(iot_hub_name:str,datalake_name:str,
     neuro_call_v2(service='endpointmanager', method='PutRawData',requestbody=request, controller="endpointmanagement")
     
 def delete_iot_hub_raw_data_capture(iot_hub_name:str):
-    endpoint = next(obj for obj in list_iot_hubs()["EndPointInfo"] if obj["Name"]==iot_hub_name and obj['EndpointTypeId']==1)
+    endpoint = next(obj for obj in list_iot_hubs() if obj["Name"]==iot_hub_name and obj['EndpointTypeId']==1)
     #Require interactive
     check = input("Are you sure you want to delete data capture on %s (y/n)"%(iot_hub_name))
     if check=='y':

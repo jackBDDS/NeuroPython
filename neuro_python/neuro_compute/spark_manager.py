@@ -83,7 +83,7 @@ def import_table(dataframe_name: str, data_store_name: str, table_name: str, par
                 raise Exception("A string is not returned when evaluating: " + path)
     return {"SparkDataFrameName":dataframe_name, "DataStoreName":data_store_name, "TableName":table_name, "PartitionPaths":partition_paths, "SqlQuery":sql_query, "IgnoreNonExistingPaths":ignore_non_existing_partition_paths}
   
-def export_table(dataframe_name: str, data_store_name: str, table_name: str, partition_path: str = "'/'"):
+def export_table(dataframe_name: str, data_store_name: str, table_name: str, partition_path: str = "'/'", write_mode: str = "append"):
     """
     pyspark script data to be outputed into a Neuroverse datalake.
     partition_path contains string that can be feed into the python eval function and return a str.
@@ -93,7 +93,10 @@ def export_table(dataframe_name: str, data_store_name: str, table_name: str, par
     if partition_path!=None:
         if not isinstance(eval(partition_path), str):
             raise Exception("A string is not returned when evaluating: " + partition_path)
-    return {"SparkDataFrameName":dataframe_name, "DataStoreName":data_store_name, "TableName":table_name, "PartitionPath":partition_path}
+    if write_mode!=None:
+        if write_mode!="append" and write_mode!="overwrite":
+            raise Exception("Invalid write_mode: write_mode must either be append or overwrite")
+    return {"SparkDataFrameName":dataframe_name, "DataStoreName":data_store_name, "TableName":table_name, "PartitionPath":partition_path, "WriteMode":write_mode}
 
 def library(library_name: str, library_type: int = 0, workspace_id: str = None, cluster_id: str = None):
     libraries=sorted([i for i in list_libraries(workspace_id=workspace_id,cluster_id=cluster_id,show_all=True) if i['LibraryName']==library_name],key=lambda x:x['LibraryVersion'])
@@ -1103,6 +1106,8 @@ class SparkMagics(Magics):
     @magic_arguments.argument('--partitionpath', '-pp',
       help='The partition path'
     )
+    @magic_arguments.argument('--writemode', '-wm',
+      help='The write mode, either append or overwrite. Defaults to append.')
     def spark_export_table(self, line, cell=None):
         global context_id
         args = magic_arguments.parse_argstring(self.spark_export_table, line)
@@ -1113,7 +1118,7 @@ class SparkMagics(Magics):
         display(widgets.VBox([output,widgets.HBox([widgets.Label("Command: Export tables"),progress,button])]))
         if args.dataframe!=None:
             temp_export_table=export_table(args.dataframe,args.storename,args.tablename,
-                                           args.partitionpath or "'/'")
+                                           args.partitionpath or "'/'", args.writemode or "append")
             checkForLimits(temp_export_table["SparkDataFrameName"],temp_export_table["DataStoreName"])
             command=execute_export_table_command(eval(contextid),temp_export_table)
             spark_magic(button,progress,command,None,output,self.shell.user_ns)
