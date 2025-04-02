@@ -687,7 +687,7 @@ def kickoff_cluster(cluster_id: str = None, workspace_id: str = None, force_rest
             status = get_cluster_status(cluster_id, workspace_id)
             check_and_break_while(start_time)
         print("Finished restart, Cluster is ready")
-    elif match_status(['pending', 'resizing'], status):
+    elif match_status(['pending', 'resizing', 'restarting'], status):
         print(f'Cluster is in a {status.lower()} state, will be ready soon.')
         while not match_status("running", status):
             time.sleep(10)
