@@ -40,9 +40,7 @@ def check_and_break_while(start_time:datetime.datetime, max_time:int=1020, raise
         raise TimeoutError(f'{process} taking longer than expected, please check status.')
     elif check_time > max_time and not raise_error:
         return True
-    elif check_time <= max_time and raise_error:
-        return False
-    elif check_time <= max_time and not raise_error:
+    elif check_time <= max_time:
         return False
     else:
         raise ValueError(f'Unexpected error in check_and_break_while function for {process}, please check inputs.')
